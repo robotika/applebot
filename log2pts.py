@@ -10,17 +10,24 @@ import math
 
 MOTION_STEP_X = 0.024/10.
 
-def log2pts( filename, outputFilename ):
+
+def log2ptsGenerator( filename ):
     x = 0.0
-    f = open( outputFilename, "w" )
     for line in open(filename):
         arr = eval(line)
         for i, a in enumerate(arr):
             angle = math.radians(i-270/2)
             dist = a/1000.0
-            f.write( "%.3f %.3f %.3f\n" % (x, dist*math.cos(angle), dist*math.sin(angle)) )
+            yield (x, dist*math.cos(angle), dist*math.sin(angle))
         x += MOTION_STEP_X
+
+
+def log2pts( filename, outputFilename ):
+    f = open( outputFilename, "w" )
+    for x,y,z in log2ptsGenerator( filename ):
+        f.write( "%.3f %.3f %.3f\n" % (x, y, z) )
     f.close()
+
 
 if __name__ == "__main__": 
     if len(sys.argv) < 3:
