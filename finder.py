@@ -15,7 +15,10 @@ from log2pts import MOTION_STEP_X
 
 def findApples( size, scans ):
     "try to find an apple(s) of given size"
-    img = np.array( np.array( scans ) / 5, dtype=np.uint8 ) # scaling milimeters to 1m in uint8
+    tmp = np.array( scans ) / 5
+    mask = tmp > 255
+    tmp[mask] = 255
+    img = np.array( tmp, dtype=np.uint8 ) # scaling milimeters to 1m in uint8
     print img.shape, img.dtype
 #    cv2.threshold( img, 128, 255, cv2.THRESH_BINARY )    
     g_mser = cv2.MSER( _delta = 1, _min_area=100, _max_area=30*20 )
