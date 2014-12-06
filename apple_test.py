@@ -71,6 +71,11 @@ class AppleTest( unittest.TestCase ):
         a = Apple( np.array( apple3 ) )
         a.saveAsCloud( "apple.txt" )
 
+    def testSphere( self ):
+        fourPoints = [ (0,0,0), (2,0,0), (0,2,0), (0,0,2) ]
+        tmp = Apple()
+        self.assertEqual( tmp.sphere( fourPoints ), ( (1.0,1.0,1.0), math.sqrt(3.0) ) )
+
 if __name__ == "__main__":
     unittest.main() 
 
