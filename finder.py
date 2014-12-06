@@ -12,17 +12,15 @@ import numpy as np
 
 from log2pgm import loadAllScans
 from log2pts import MOTION_STEP_X
+from apple import Apple
 
 def isItApple( patch ):
-    w,h = patch.shape
-    inside = patch[w/4:3*w/4,h/4:3*h/4]
-    print np.amax(inside) - np.amin(inside)
-    print inside
-    return False
-
+    a = Apple(patch)
+    return a.fitSphere() > 0.8
 
 def findApples( size, scans ):
     "try to find an apple(s) of given size"
+    orig = np.array( scans ).T
     tmp = np.array( scans ) / 5
     mask = tmp > 255
     tmp[mask] = 255
@@ -41,7 +39,7 @@ def findApples( size, scans ):
             print (x2-x1)*MOTION_STEP_X, (x1,y1),(x2,y2)
             box = np.int0([(x1,y1),(x2,y1),(x2,y2),(x1,y2)])        
             cv2.drawContours( frame,[box],0,(255,0,0),2)
-            if isItApple( gray[y1:y2,x1:x2] ):
+            if isItApple( orig[y1:y2,x1:x2] ):
                 ret.append( ((x1,y1),(x2,y2)) )
                 cv2.drawContours( frame,[box],0,(0,0,255),2)
 
