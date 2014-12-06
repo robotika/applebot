@@ -76,6 +76,13 @@ class AppleTest( unittest.TestCase ):
         tmp = Apple()
         self.assertEqual( tmp.sphere( fourPoints ), ( (1.0,1.0,1.0), math.sqrt(3.0) ) )
 
+    def testFitSphere( self ):
+        a = Apple( np.array( apple3 ) )
+        self.assertEqual( a.fitSphere( maxDist = 1.0, numIter=1 ), 1.0 )
+        self.assertAlmostEqual( a.fitSphere( maxDist = 0.01, numIter=1 ), 0.65384, 3 )
+        self.assertAlmostEqual( a.fitSphere( maxDist = 0.01, numIter=1 ), 0.52366, 3 )
+        self.assertAlmostEqual( a.fitSphere( maxDist = 0.01, numIter=1000, minRadius=0.03, maxRadius=0.1 ), 0.6982248, 3 )
+
 if __name__ == "__main__":
     unittest.main() 
 

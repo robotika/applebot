@@ -4,6 +4,7 @@
 
 import sys
 import math
+import random
 import cv2
 import numpy as np
 
@@ -11,14 +12,13 @@ from log2pts import MOTION_STEP_X
 
 class Apple:
     def __init__( self, patch=None ):
+        self.center, self.radius = None, None
         if patch is not None:
             self.data = patch.copy()
         else:
             self.data = None
+        self.random = random.Random(0).choice
 
-    def fitSphere( self ):
-        # TODO
-        return 0.5 # maybe yes, maybe no
 
     def _symetryPlane( self, A, B ):
         "return plane of symetry for two points"
@@ -45,7 +45,10 @@ class Apple:
         # solve a*x = b
         a = np.array( [pAB[0], pBC[0], pCD[0]] )
         b = np.array( [-pAB[1], -pBC[1], -pCD[1]] )
-        center = tuple(np.linalg.solve( a, b ).tolist())
+        try:
+            center = tuple(np.linalg.solve( a, b ).tolist())
+        except np.linalg.LinAlgError:
+            return None, None
         return center, self._dist( center, A )
 
 
@@ -67,4 +70,24 @@ class Apple:
         for x,y,z in self.points():
             f.write( "%.3f %.3f %.3f\n" % (x, y, z) )
         f.close()
+
+
+    def fitSphere( self, maxDist=0.02, numIter=100, minRadius=None, maxRadius=None ):
+        pts = self.points()
+        best = None
+        self.center, self.radius = None, None
+        for it in xrange(numIter):
+            center, radius = self.sphere( [self.random(pts) for i in xrange(4)] )
+            if center is not None:
+                count = 0
+                for p in pts:
+                    if abs(self._dist(center, p)-radius) < maxDist:
+                        count += 1
+                if best is None or count > best:
+                    if minRadius is None or minRadius < radius < maxRadius:
+                        self.center, self.radius = center, radius
+                        best = count
+        if best is None:
+            return None
+        return best/float(len(pts))
 

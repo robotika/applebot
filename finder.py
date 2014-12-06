@@ -16,7 +16,11 @@ from apple import Apple
 
 def isItApple( patch ):
     a = Apple(patch)
-    return a.fitSphere() > 0.8
+    val = a.fitSphere( minRadius=0.03, maxRadius=0.15 )
+    if val > 0.8:
+        print a.center, a.radius
+        return True
+    return False
 
 def findApples( size, scans ):
     "try to find an apple(s) of given size"
