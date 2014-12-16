@@ -12,7 +12,11 @@ import math
 def loadAllScans( filename ):
     arr = []
     for line in open(filename):
-        arr.append( eval(line) )
+        t = eval(line)
+        if len(t) == 2: # distance + remission
+            arr.append( t[0] )
+        else:
+            arr.append( t )
     return arr
 
 def dist2gray( value ):
