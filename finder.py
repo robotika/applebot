@@ -22,6 +22,7 @@ def isItApple( patch ):
         return True
     return False
 
+
 def findApples( size, scans ):
     "try to find an apple(s) of given size"
     orig = np.array( scans ).T
@@ -47,6 +48,29 @@ def findApples( size, scans ):
                 ret.append( ((x1,y1),(x2,y2)) )
                 cv2.drawContours( frame,[box],0,(0,0,255),2)
 
+    cv2.imshow('image', frame) # transposed matrix corresponds to "what we are used to" view
+    cv2.imwrite( "tmp.png", frame )
+    cv2.waitKey(0)
+    return ret
+
+def bruteForce( size, scans ):
+    orig = np.array( scans ).T
+    tmp = np.array( scans ) / 5
+    mask = tmp > 255
+    tmp[mask] = 255
+    img = np.array( tmp, dtype=np.uint8 ) # scaling milimeters to 1m in uint8
+    frame = cv2.cvtColor( img.T, cv2.COLOR_GRAY2BGR )
+    winSizeX = winSizeY = int(size/MOTION_STEP_X)
+    ret = []
+    for minX in xrange( 200 ):
+        print minX,
+        for minY in xrange( 200 ):
+            x1,x2,y1,y2 = minX, minX+winSizeX, minY, minY+winSizeY
+            if isItApple( orig[y1:y2,x1:x2] ):
+                box = np.int0([(x1,y1),(x2,y1),(x2,y2),(x1,y2)])        
+                ret.append( ((x1,y1),(x2,y2)) )
+                cv2.drawContours( frame,[box],0,(0,0,255),2)
+        print len(ret)
     cv2.imshow('image', frame) # transposed matrix corresponds to "what we are used to" view
     cv2.imwrite( "tmp.png", frame )
     cv2.waitKey(0)
