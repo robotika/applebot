@@ -16,9 +16,11 @@ from apple import Apple
 
 def isItApple( patch ):
     a = Apple(patch)
-    val = a.fitSphere( minRadius=0.03, maxRadius=0.15 )
-    if val > 0.8:
-        print a.center, a.radius
+    val = a.fitSphere( minRadius=0.03, maxRadius=0.15, maxDist=0.01, numIter=100 )
+    desiredRatio = math.pi/4. # 0.78
+    tolerance = 0.1
+    if desiredRatio-tolerance < val < desiredRatio+tolerance:
+        print "%.2f:" % val, a.center, a.radius
         return True
     return False
 
