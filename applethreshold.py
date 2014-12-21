@@ -10,16 +10,22 @@ import numpy as np
 
 bins = np.arange(256).reshape(256,1)
 
-def threshold( img, appleSize=10 ):
+def threshold( img, appleSize=10, twoLevels=True ):
   gray = cv2.cvtColor( img, cv2.COLOR_BGR2GRAY )
   def update( level ):
     tmp = gray.copy()
     mask = tmp < (level - appleSize/2)
     tmp[mask] = 255
-    mask = tmp > (level + appleSize/2)
+    if twoLevels:
+      mask = gray < level
+      tmp[mask] = 254
+    mask = gray > (level + appleSize/2)
     tmp[mask] = 255
-    mask = (tmp != 255)
+    mask = (tmp < 254)
     tmp[mask] = 0
+    if twoLevels:
+      mask = (tmp == 254)
+      tmp[mask] = 128
     cv2.imshow( 'image', tmp )
   ret, binary = cv2.threshold( gray, 0, 255, cv2.THRESH_OTSU )
   update( int(ret) )
