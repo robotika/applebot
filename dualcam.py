@@ -8,10 +8,12 @@
 import sys
 import urllib
 
-URL = "http://192.168.1.6/h264f?res=half&qp=20&ssn=13"
-URLP = "http://192.168.1.6/h264f?res=half&qp=20&ssn=13&iframe=0"
+URL = "http://192.168.1.6/h264f?res=half&qp=20&ssn=1&channel=color" # color|mono
+URLP = "http://192.168.1.6/h264f?res=half&qp=20&ssn=1&iframe=0&channel=color"
+URL_DAY_NIGHT = "http://192.168.1.6/set?daynight=dual" # auto|day|night|dual
 
 def recordStream( filename ):
+    print urllib.urlopen( URL_DAY_NIGHT ).read()
     url = urllib.urlopen( URL ) 
     f = open( filename, "wb" )
     while True:
