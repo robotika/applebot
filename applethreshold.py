@@ -17,7 +17,7 @@ def threshold( img, appleSize=10, twoLevels=True ):
     mask = tmp < (level - appleSize/2)
     tmp[mask] = 255
     if twoLevels:
-      mask = gray < level
+      mask = tmp < level
       tmp[mask] = 254
     mask = gray > (level + appleSize/2)
     tmp[mask] = 255
