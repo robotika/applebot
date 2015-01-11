@@ -1,17 +1,27 @@
 """
   Simple tool for cutting sub-scans/images with access to higher resolution
   usage:
-     ./cutter.py <filename>
+     ./cutter.py <filename txt OR img>
 """
 # based on OpenCV2 sample mouse_and_match.py
 
 import sys
 import cv2
-
 import numpy as np
+
+# TODO refactoring into library
+from log2pgm import loadAllScans
+from finder import scans2img
 
 drag_start = None
 sel = (0,0,0,0)
+
+def dumpPatch( patch ):
+    for line in patch:
+        for v in line:
+            print "%3d" % v,
+        print
+    print
 
 def onmouse(event, x, y, flags, param):
     global drag_start, sel
@@ -20,7 +30,10 @@ def onmouse(event, x, y, flags, param):
         sel = 0,0,0,0
     elif event == cv2.EVENT_LBUTTONUP:
         if sel[2] > sel[0] and sel[3] > sel[1]:
-            patch = gray[sel[1]:sel[3],sel[0]:sel[2]]            
+            patch = gray[sel[1]:sel[3],sel[0]:sel[2]]
+            dumpPatch( patch )
+            if orig is not None:
+                dumpPatch( orig[sel[1]:sel[3],sel[0]:sel[2]] )
             cv2.imshow("patch", cv2.resize( patch, (0,0), fx=16, fy=16, interpolation=cv2.INTER_NEAREST ) )
         drag_start = None
     elif drag_start:
@@ -45,12 +58,20 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print __doc__
         sys.exit(1)
-    img = cv2.imread( sys.argv[1], cv2.CV_LOAD_IMAGE_COLOR )
+    filename = sys.argv[1]
+    if filename.endswith( ".txt" ):
+        scans=loadAllScans( filename )
+        orig = np.array( scans ).T
+        img = scans2img( scans ).T
+        gray = img.copy()
+    else:
+        orig = None
+        img = cv2.imread( filename, cv2.CV_LOAD_IMAGE_COLOR )
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # note, that callback has to be set in main code otherwise it crashes :(
     cv2.namedWindow("gray",1)
     cv2.setMouseCallback("gray", onmouse)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     cutter( img )
     cv2.destroyAllWindows()
 # vim: expandtab sw=4 ts=4
