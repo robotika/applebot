@@ -9,14 +9,18 @@ import sys
 import math
 
 
-def loadAllScans( filename ):
+def loadAllScans( filename, returnAlsoRemission=False ):
     arr = []
+    arrRem = []
     for line in open(filename):
         t = eval(line)
         if len(t) == 2: # distance + remission
             arr.append( t[0] )
+            arrRem.append( t[1] )
         else:
             arr.append( t )
+    if returnAlsoRemission:
+        return arr, arrRem
     return arr
 
 def dist2gray( value ):

@@ -34,6 +34,8 @@ def onmouse(event, x, y, flags, param):
             dumpPatch( patch )
             if orig is not None:
                 dumpPatch( orig[sel[1]:sel[3],sel[0]:sel[2]] )
+            if remission is not None:
+                dumpPatch( remission[sel[1]:sel[3],sel[0]:sel[2]] )
             cv2.imshow("patch", cv2.resize( patch, (0,0), fx=16, fy=16, interpolation=cv2.INTER_NEAREST ) )
         drag_start = None
     elif drag_start:
@@ -60,12 +62,13 @@ if __name__ == "__main__":
         sys.exit(1)
     filename = sys.argv[1]
     if filename.endswith( ".txt" ):
-        scans=loadAllScans( filename )
+        scans, scansRem = loadAllScans( filename, returnAlsoRemission=True )
         orig = np.array( scans ).T
+        remission = np.array( scansRem ).T
         img = scans2img( scans ).T
         gray = img.copy()
     else:
-        orig = None
+        orig, remission = None, None
         img = cv2.imread( filename, cv2.CV_LOAD_IMAGE_COLOR )
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
