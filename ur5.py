@@ -102,11 +102,7 @@ class UniversalRobotUR5:
         assert len(sixAngles) == 6, sixAngles
         self.sendCmd("movej("+str(list(sixAngles)) + ", a=%f, v=%f)" % (self.acc, self.speed) + "\n")
         # or use t=<time> and r=<radius>
-#        time.sleep(2.0) # keep it as part of movej? it should rather check positions and wait until it is complete
-
-    def movel( self, sixAngles ):
-        "move linearly"
-        pass
+#        time.sleep(2.0) # keep it as part of movej? it should rather check positions and wait until it is complete    
 
     def testIO( self ):
 #        self.s.send("set_digital_out(8,True)" + "\n") # tool 0
@@ -137,6 +133,13 @@ class UniversalRobotUR5:
                 break
 
 
+    def openGripper( self ):
+        self.sendCmd("set_digital_out(8,False)" + "\n") # tool 0
+
+
+    def closeGripper( self ):
+        self.sendCmd("set_digital_out(8,True)" + "\n") # tool 0
+
 
 def testUR5( args ):
     replayLog = None
@@ -162,9 +165,12 @@ def testUR5( args ):
 #    for i in xrange(10):
 #        robot.receiveData()
 
+    robot.openGripper()
     robot.scan()
-#    robot.goto( (0.139, -0.065, 0.869) ) # top
-    robot.goto( (0.4, 0.3, 0.5) ) # top
+    robot.goto( (0.4, 0.3, 0.5) ) # pick apple
+    robot.closeGripper()
+    robot.goto( (0.139, -0.065, 0.369) ) # drop apple
+    robot.openGripper()
     robot.term()
 
 
