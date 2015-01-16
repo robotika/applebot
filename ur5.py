@@ -117,16 +117,21 @@ class UniversalRobotUR5:
 
     def scan( self ):
         self.sendCmd("movej( p[0.139, -0.065, 0.869,    -1.311, 1.026, -0.869], a=0.1, v=0.1 )\n")
-        for i in xrange(80):
+        for i in xrange(2):
             self.receiveData()
+        while self.moving:
+            self.receiveData()
+
         self.sendCmd("movej( p[0.139, -0.065, 0.369,    -1.311, 1.026, -0.869], a=0.1, v=0.1 )\n")
-        for i in xrange(80):
+        for i in xrange(2):
+            self.receiveData()
+        while self.moving:
             self.receiveData()
 
 
     def goto( self, xyz ):
         self.sendCmd("movej( p[%f, %f, %f, -1.311, 1.026, -0.869], a=0.1, v=0.1 )\n" % xyz )
-        for i in xrange(80):
+        for i in xrange(200):
             self.receiveData()
             if not self.moving:
                 break
@@ -157,7 +162,7 @@ def testUR5( args ):
 #    for i in xrange(10):
 #        robot.receiveData()
 
-#    robot.scan()
+    robot.scan()
 #    robot.goto( (0.139, -0.065, 0.869) ) # top
     robot.goto( (0.4, 0.3, 0.5) ) # top
     robot.term()
