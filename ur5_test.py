@@ -44,10 +44,15 @@ x00\x00\x00\x00?\xb6\xd3\x1f\xcd"""
 
 
 class UR5Test( unittest.TestCase ): 
-    def testParseData( self ):
+    def XtestParseData0( self ):
         d = "".join( [x.strip() for x in data1.split('\n')] )
         d2 = eval( "'" + d + "'" )
-        print len(d2), "".join( ["%02X " % ord(x) for x in d2[:10]] )
+        print len(d2), "".join( ["%02X " % ord(x) for x in d2[:20]] )
+        print parseData( d2 )
+
+    def testParseData( self ):
+        d = open("logs/ur5_150116_123711.bin", "rb" ).read()
+        print parseData( d )
 
 if __name__ == "__main__":
     unittest.main() 
