@@ -38,7 +38,15 @@ def parseData( data, robot=None, verbose=False ):
         if len(data) < subLen:
             return None
 #        print packageType, subLen
-        if packageType == 1:
+        if packageType == 0:
+            # Robot Mode Data
+            assert subLen == 38, subLen
+            timestamp = struct.unpack( ">Q", data[5:5+8] )[0]
+            if robot:
+                robot.timestamp = timestamp
+            if verbose:
+                print timestamp
+        elif packageType == 1:
             # Joint Data
             assert subLen == 251, subLen
             sumSpeed = 0
@@ -63,11 +71,14 @@ def parseData( data, robot=None, verbose=False ):
         print "------------"
     return ret
 
+
+
 class UniversalRobotUR5:
     def __init__( self, replayLog=None ):
         self.acc = 0.13962634015954636
         self.speed = 0.10471975511965976
         self.moving = None # unknown
+        self.timestamp = None
         if replayLog is None:
             self.replayLog = False
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
