@@ -48,11 +48,13 @@ def parseData( data, robot=None, verbose=False ):
         if packageType == 0:
             # Robot Mode Data
             assert subLen == 38, subLen
-            timestamp = struct.unpack( ">Q", data[5:5+8] )[0]
+            timestamp, connected, enabled, powerOn, emergencyStopped, protectiveStopped, programRunning, programPaused, \
+                robotMode, controlMode, targetSpeedFraction, speedScaling \
+                = struct.unpack( ">QBBBBBBBBBdd", data[5:subLen] )
             if robot:
                 robot.timestamp = timestamp
             if verbose:
-                print timestamp
+                print timestamp, targetSpeedFraction, speedScaling
         elif packageType == 1:
             # Joint Data
             assert subLen == 251, subLen
