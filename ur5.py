@@ -72,6 +72,11 @@ def parseData( data, robot=None, verbose=False ):
             assert subLen == 37, subLen
             if verbose:
                 print "Tool", struct.unpack(">bbddfBffB", data[5:subLen] )
+        elif packageType == 3:
+            # Masterboard Data
+            assert subLen == 72, subLen
+            if verbose:
+                print "Masterboard", [hex(x) for x in struct.unpack(">II", data[5:5+8] )]
         elif packageType == 4:
             # Cartesian Info
             assert subLen == 53, subLen
