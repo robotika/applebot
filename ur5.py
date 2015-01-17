@@ -23,6 +23,13 @@ UR5_PORT = 30002
 # - logging
 # - extra thread?
 
+HAND_ANGLES0 = 0.38359949145168565, 1.6393995499771168, 0.8566860014985311
+HAND_ANGLES = 0.3566111421965905, 1.6135099949273701, 0.8512607535360434
+HAND_ANGLES_STR = "%f, %f, %f" % HAND_ANGLES
+
+SCAN_TOP_XYZ = 0.3, 0.1, 0.6
+SCAN_BOTTOM_XYZ = 0.3, 0.1, 0.1
+
 def parseData( data, robot=None, verbose=False ):
     if len(data) < 5:
         return None
@@ -57,13 +64,15 @@ def parseData( data, robot=None, verbose=False ):
                 sumSpeed += abs(speed)
                 # 253 running mode
             if verbose:
-                print sumSpeed
+                print "sumSpeed", sumSpeed
             if robot:
                 robot.moving = (sumSpeed > 0.000111)
         elif packageType == 4:
             # Cartesian Info
             assert subLen == 53, subLen
             x,y,z, rx,ry,rz = struct.unpack( ">dddddd", data[5:subLen] )
+            if robot:
+                robot.pose = (x,y,z, rx,ry,rz)
             if verbose:
                 print "%.3f, %.3f, %.3f,    %.3f, %.3f, %.3f" % (x,y,z, rx,ry,rz)
         data = data[subLen:]
@@ -79,6 +88,7 @@ class UniversalRobotUR5:
         self.speed = 0.10471975511965976
         self.moving = None # unknown
         self.timestamp = None
+        self.pose = None
         if replayLog is None:
             self.replayLog = False
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -123,13 +133,13 @@ class UniversalRobotUR5:
 
 
     def scan( self ):
-        self.sendCmd("movej( p[0.139, -0.065, 0.869,    -1.311, 1.026, -0.869], a=0.1, v=0.1 )\n")
+        self.sendCmd("movel( p[%f,%f,%f, " % SCAN_TOP_XYZ + HAND_ANGLES_STR + "], a=0.1, v=0.1 )\n")
         for i in xrange(2):
             self.receiveData()
         while self.moving:
             self.receiveData()
 
-        self.sendCmd("movej( p[0.139, -0.065, 0.369,    -1.311, 1.026, -0.869], a=0.1, v=0.1 )\n")
+        self.sendCmd("movel( p[%f,%f,%f, " % SCAN_BOTTOM_XYZ + HAND_ANGLES_STR + "], a=0.1, v=0.1 )\n")
         for i in xrange(2):
             self.receiveData()
         while self.moving:
@@ -137,7 +147,7 @@ class UniversalRobotUR5:
 
 
     def goto( self, xyz ):
-        self.sendCmd("movej( p[%f, %f, %f, -1.311, 1.026, -0.869], a=0.1, v=0.1 )\n" % xyz )
+        self.sendCmd( ("movel( p[%f, %f, %f," % xyz) + HAND_ANGLES_STR + "], a=0.1, v=0.1 )\n" )
         for i in xrange(200):
             self.receiveData()
             if not self.moving:
@@ -178,11 +188,12 @@ def testUR5( args ):
 
     robot.openGripper()
     robot.scan()
-    robot.goto( (0.4, 0.3, 0.5) ) # pick apple
+    robot.goto( (0.3693, 0.291, 0.279) ) # pick apple
     robot.closeGripper()
-    robot.goto( (0.139, -0.065, 0.369) ) # drop apple
+    robot.goto( (0.3693, 0.291, 0.1) ) # drop apple
     robot.openGripper()
     robot.term()
+    print robot.pose
 
 
 if __name__ == "__main__": 
