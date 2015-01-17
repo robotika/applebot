@@ -67,6 +67,11 @@ def parseData( data, robot=None, verbose=False ):
                 print "sumSpeed", sumSpeed
             if robot:
                 robot.moving = (sumSpeed > 0.000111)
+        elif packageType == 2:
+            # Tool Data
+            assert subLen == 37, subLen
+            if verbose:
+                print "Tool", struct.unpack(">bbddfBffB", data[5:subLen] )
         elif packageType == 4:
             # Cartesian Info
             assert subLen == 53, subLen
