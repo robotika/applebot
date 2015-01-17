@@ -32,7 +32,7 @@ def scans2img( scans ):
     return np.array( tmp, dtype=np.uint8 ) # scaling milimeters to 1m in uint8
 
 
-def findApples( size, scans ):
+def findApples1( size, scans ):
     "try to find an apple(s) of given size"
     orig = np.array( scans ).T
     img = scans2img( scans )
@@ -138,6 +138,10 @@ def findApples2( size, scans, gen ):
     cv2.imwrite( "tmp.png", frame )
     cv2.waitKey(0)
     return ret
+
+
+def findApples( size, scans ):
+    return findApples2( size, scans, gen=denseAreaG )
 
 
 if __name__ == "__main__": 
