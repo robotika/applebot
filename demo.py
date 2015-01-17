@@ -8,11 +8,12 @@
 import os
 import sys
 import time
+import datetime
 
 from threading import Thread,Event,Lock 
 from dualcam import recordStream
 from scan3d import scan, takePicture
-from ur5 import UniversalRobotUR5
+from ur5 import UniversalRobotUR5, SCAN_TOP_XYZ
 from finder import findApples
 
 sys.path.append( ".."+os.sep+"eduro") 
@@ -37,6 +38,7 @@ class Laser3D( Thread ):
         self.laser.startLaser()
         self.shouldIRun = Event()
         self.shouldIRun.set()
+        self.collect = False
         self.scan = []
 
     def run( self ):
@@ -45,12 +47,11 @@ class Laser3D( Thread ):
         while self.shouldIRun.isSet(): 
             if i % 10 == 0:
                 takePicture( i/10 )
-            data, reminision = laser.internalScan()
+            data, reminision = self.laser.internalScan()
             self.f.write( str( (data, reminision) ) + '\n' )
             self.f.flush()
             if self.collect:
-                scan.append( (data,reminision) )        
-            print len(data), data[133:138]
+                self.scan.append( (data,reminision) )        
             i += 1
         self.f.close() 
 
@@ -74,20 +75,28 @@ def demo():
     camera.start()
     scanner.start()
 
-    robot = UniversalRobot5()
+    robot = UniversalRobotUR5()
     robot.openGripper()
-    robot.goto( (0.139, -0.065, 0.869) ) # initial scan position
+    robot.goto( SCAN_TOP_XYZ ) # initial scan position
     scanner.startCollect()
     robot.scan()
     scanner.stopCollect()
     scan = scanner.getScan()
-    apples = findApples( APPLE_SIZE, scan )
+
+    # dump scan for further analysis
+    filename = datetime.datetime.now().strftime("logs/snapshot_%y%m%d_%H%M%S.txt")
+    f = open( filename, "w" )
+    f.write( str(scan) )
+    f.close()
+    
+    #apples = findApples( APPLE_SIZE, scan )
+    apples = [(1,2,3)]
     for apple in apples:
         print "Apple", apple
         # TODO conversion image -> xyz
-        robot.goto( (0.4, 0.3, 0.5) ) # pick apple
+        robot.goto( (0.3693, 0.291, 0.279) ) # pick apple
         robot.closeGripper()
-        robot.goto( (0.139, -0.065, 0.369) ) # drop apple
+        robot.goto( (0.3693, 0.291, 0.1) ) # drop apple
         robot.openGripper()
     robot.term()
     scanner.requestStop()

@@ -148,6 +148,8 @@ class UniversalRobotUR5:
 
     def goto( self, xyz ):
         self.sendCmd( ("movel( p[%f, %f, %f," % xyz) + HAND_ANGLES_STR + "], a=0.1, v=0.1 )\n" )
+        for i in xrange(2):
+            self.receiveData()
         for i in xrange(200):
             self.receiveData()
             if not self.moving:
