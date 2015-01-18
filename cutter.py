@@ -1,7 +1,7 @@
 """
   Simple tool for cutting sub-scans/images with access to higher resolution
   usage:
-     ./cutter.py <filename txt OR img>
+     ./cutter.py <filename txt OR img> [<x1> <y1> <x2> <y2>]
 """
 # based on OpenCV2 sample mouse_and_match.py
 
@@ -74,6 +74,12 @@ if __name__ == "__main__":
 
     # note, that callback has to be set in main code otherwise it crashes :(
     cv2.namedWindow("gray",1)
+    if len(sys.argv) == 6:
+        x1,y1,x2,y2 = [int(x) for x in sys.argv[2:]]
+        onmouse( cv2.EVENT_LBUTTONDOWN, x1, y1, 0, None )
+        onmouse( 0, x1, y1, cv2.EVENT_FLAG_LBUTTON, None )
+        onmouse( 0, x2, y2, cv2.EVENT_FLAG_LBUTTON, None )
+        onmouse( cv2.EVENT_LBUTTONUP, x2, y2, 0, None )
     cv2.setMouseCallback("gray", onmouse)
     cutter( img )
     cv2.destroyAllWindows()
