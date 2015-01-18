@@ -20,7 +20,7 @@ def isItApple( patch ):
     desiredRatio = math.pi/4. # 0.78
     tolerance = 0.1
     if desiredRatio-tolerance < val < desiredRatio+tolerance:
-        print "%.2f:" % val, a.center, a.radius
+        print "%.2f:" % val, "(%.3f, %.3f, %.3f)" % a.center, "%.3f" % a.radius
         return True
     return False
 
@@ -30,6 +30,29 @@ def scans2img( scans ):
     mask = tmp > 255
     tmp[mask] = 255
     return np.array( tmp, dtype=np.uint8 ) # scaling milimeters to 1m in uint8
+
+def overlap( ((x1,y1),(x2,y2)), ((x3,y3),(x4,y4)) ):
+    assert x1 < x2 and y1 < y2, ((x1,y1),(x2,y2))
+    assert x3 < x4 and y3 < y4, ((x3,y3),(x4,y4))
+    if x1 > x4 or x2 < x3:
+        return False
+    if y1 > y4 or y2 < y3:
+        return False
+    # TODO inside
+    return True
+
+def removeDuplicities( boxes ):
+    "remove overlapping rectangles, 1st wins"
+    if len(boxes) == 0:
+        return boxes
+    ret = [boxes[0]]
+    for b in boxes:
+        for c in ret:
+            if overlap(b,c):
+                break
+        else:
+            ret.append( b )
+    return ret
 
 
 def findApples1( size, scans ):
@@ -94,7 +117,7 @@ def denseAreaG( img ):
     appleSize = 10
     gray = cv2.cvtColor( img, cv2.COLOR_BGR2GRAY )
     kernel = np.ones( (10,10), np.uint8)
-    for level in xrange( appleSize, 256-appleSize ):
+    for level in xrange( 40, 100 ): # i.e. from 20cm to 50cm
         tmp = gray.copy()
         mask = tmp < (level - appleSize/2)
         tmp[mask] = 0
@@ -109,23 +132,23 @@ def denseAreaG( img ):
 
 #################################
 
-def findApples2( size, scans, gen ):
+def findApples2( size, scans, gen, motionStep=MOTION_STEP_X ):
     orig = np.array( scans ).T
     img = scans2img( scans )
     frame = cv2.cvtColor( img.T, cv2.COLOR_GRAY2BGR )
-    winSizeX = int(size/MOTION_STEP_X)
+    winSizeX = int(size/motionStep)
     ret = []
+    print "Image:", frame.shape[:2]
     for x,y in gen( frame ):
         dist = orig[y][x]/1000.0
-        print x,y, dist, frame.shape
         if dist < 0.1 or dist > 1.0:
             continue
         if x < winSizeX or x > frame.shape[1]-winSizeX:
             continue
         winSizeY = 1+int(math.degrees( size/float(dist) )) # just approximation with 1deg resolution
-        print "winSizeY", winSizeY, frame.shape
         if y < winSizeY or y > frame.shape[0]-winSizeY:
             continue
+        print dist, (x,y), "winSize:", (winSizeX, winSizeY)
 
         x1,x2,y1,y2 = x-winSizeX/2, x+winSizeX/2, y-winSizeY/2, y+winSizeY/2
         box = np.int0([(x1,y1),(x2,y1),(x2,y2),(x1,y2)])
@@ -137,7 +160,7 @@ def findApples2( size, scans, gen ):
         cv2.waitKey(1)
     cv2.imwrite( "tmp.png", frame )
     cv2.waitKey(0)
-    return ret
+    return removeDuplicities( ret )
 
 
 def findApples( size, scans ):
