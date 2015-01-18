@@ -19,6 +19,17 @@ def loadAllScans( filename, returnAlsoRemission=False ):
             arrRem.append( t[1] )
         else:
             arr.append( t )
+    # workaround for snapshots, where whole scan is single line
+    if len(arr) == 1:
+        print "Snapshot file detected, count =", len(arr[0])
+        tmp = arr[0]
+        arr = []
+        for t in tmp:
+            if len(t) == 2: # distance + remission
+                arr.append( t[0] )
+                arrRem.append( t[1] )
+            else:
+                arr.append( t )
     if returnAlsoRemission:
         return arr, arrRem
     return arr
