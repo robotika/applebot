@@ -13,8 +13,9 @@ import datetime
 from threading import Thread,Event,Lock 
 from dualcam import recordStream
 from scan3d import scan, takePicture
-from ur5 import UniversalRobotUR5, SCAN_TOP_XYZ
+from ur5 import UniversalRobotUR5, SCAN_TOP_XYZ, SCAN_BOTTOM_XYZ
 from finder import findApples
+from log2pgm import loadAllScans
 
 sys.path.append( ".."+os.sep+"eduro") 
 import laser 
@@ -88,12 +89,17 @@ def demo():
     f = open( filename, "w" )
     f.write( str(scan) )
     f.close()
-    
-    #apples = findApples( APPLE_SIZE, scan )
-    apples = [(1,2,3)]
+
+    assert len(scan) > 0, len(scan)
+    motionStep = (SCAN_TOP_XYZ[2] - SCAN_BOTTOM_XYZ[2])/float(len(scan))
+    apples = findApples( APPLE_SIZE, loadAllScans(filename), motionStep=motionStep )
     for apple in apples:
         print "Apple", apple
-        # TODO conversion image -> xyz
+        # conversion image -> xyz
+        ax,ay,az = apple
+        scannerOffsetZ = 0 # TODO
+        x,y,z = SCAN_TOP_XYZ[0]+ay, SCAN_TOP_XYZ[1]+az, SCAN_TOP_XYZ[2]-ax-scannerOffsetZ
+        print x,y,z # TODO robot.goto there ...
         robot.goto( (0.3693, 0.291, 0.279) ) # pick apple
         robot.closeGripper()
         robot.goto( (0.3693, 0.291, 0.1) ) # drop apple

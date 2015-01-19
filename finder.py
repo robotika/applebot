@@ -198,12 +198,13 @@ def findApples3( size, scans, motionStep ):
                 cv2.drawContours(frame, [cnt], -1, (0,255,0), 2)
                 if len(ret) == 0:
                     cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
-                    ret.append( ((x,y),(x+w,y+h)) )
+                    angle = math.radians( y + h/2.0 - 271/2. )
+                    dist = level*5/1000.0 # gray to meters
+                    ret.append( (motionStep*(x+w/2.0), dist*math.cos(angle), dist*math.sin(angle)) )
 
         cv2.imshow('image', frame) # transposed matrix corresponds to "what we are used to" view
         cv2.waitKey(1)
-    cv2.waitKey(2000)
-    return removeDuplicities( ret )
+    return ret
 
 
 
@@ -216,6 +217,7 @@ if __name__ == "__main__":
         print __doc__
         sys.exit(1)
     print findApples( size=float(sys.argv[1]), motionStep=float(sys.argv[2]), scans=loadAllScans(sys.argv[3]) )
+    cv2.waitKey(0)
 
 # vim: expandtab sw=4 ts=4
 
