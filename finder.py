@@ -2,7 +2,7 @@
 """
   Try to find an apple in 3D scan
     usage:
-         ./finder.py <size in meters> <log file>
+         ./finder.py <apple size in meters> <motionStep> <log file>
 """
 
 import sys
@@ -14,8 +14,8 @@ from log2pgm import loadAllScans
 from log2pts import MOTION_STEP_X
 from apple import Apple
 
-def isItApple( patch ):
-    a = Apple(patch)
+def isItApple( patch, motionStep ):
+    a = Apple(patch, motionStep=motionStep)
     val = a.fitSphere( minRadius=0.03, maxRadius=0.15, maxDist=0.01, numIter=100 )
     desiredRatio = math.pi/4. # 0.78
     tolerance = 0.1
@@ -127,19 +127,19 @@ def denseAreaG( img ):
         tmp[mask] = 1
         tmp = cv2.filter2D( tmp, -1, kernel ) 
         y,x = np.unravel_index( tmp.argmax(), tmp.shape )
-        yield (x, y)
+        yield (x, y), (level - appleSize/2, level + appleSize/2)
 
 
 #################################
 
-def findApples2( size, scans, gen, motionStep=MOTION_STEP_X ):
+def findApples2( size, scans, gen, motionStep ):
     orig = np.array( scans ).T
     img = scans2img( scans )
     frame = cv2.cvtColor( img.T, cv2.COLOR_GRAY2BGR )
     winSizeX = int(size/motionStep)
     ret = []
     print "Image:", frame.shape[:2]
-    for x,y in gen( frame ):
+    for (x,y), (t1,t2) in gen( frame ):
         dist = orig[y][x]/1000.0
         if dist < 0.1 or dist > 1.0:
             continue
@@ -148,12 +148,17 @@ def findApples2( size, scans, gen, motionStep=MOTION_STEP_X ):
         winSizeY = 1+int(math.degrees( size/float(dist) )) # just approximation with 1deg resolution
         if y < winSizeY or y > frame.shape[0]-winSizeY:
             continue
-        print dist, (x,y), "winSize:", (winSizeX, winSizeY)
+        print dist, (x,y), "winSize:", (winSizeX, winSizeY), "t=", (t1,t2)
 
         x1,x2,y1,y2 = x-winSizeX/2, x+winSizeX/2, y-winSizeY/2, y+winSizeY/2
         box = np.int0([(x1,y1),(x2,y1),(x2,y2),(x1,y2)])
         cv2.drawContours( frame,[box],0,(255,0,0),2)
-        if isItApple( orig[y1:y2,x1:x2] ):
+        patch = orig[y1:y2,x1:x2].copy()
+        mask = patch < (t1*5) # sigh raw mm readings vs. 0.l255 scaling
+        patch[mask] = 0
+        mask = patch > (t2*5)
+        patch[mask] = 0
+        if isItApple( patch, motionStep ):
             ret.append( ((x1,y1),(x2,y2)) )
             cv2.drawContours( frame,[box],0,(0,0,255),2)
         cv2.imshow('image', frame) # transposed matrix corresponds to "what we are used to" view
@@ -163,16 +168,15 @@ def findApples2( size, scans, gen, motionStep=MOTION_STEP_X ):
     return removeDuplicities( ret )
 
 
-def findApples( size, scans ):
-    return findApples2( size, scans, gen=denseAreaG )
+def findApples( size, scans, motionStep ):
+    return findApples2( size, scans, gen=denseAreaG, motionStep=motionStep )
 
 
 if __name__ == "__main__": 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         print __doc__
         sys.exit(1)
-#    print findApples( size=float(sys.argv[1]), scans=loadAllScans(sys.argv[2]) )
-    print findApples2( size=float(sys.argv[1]), scans=loadAllScans(sys.argv[2]), gen=denseAreaG )
+    print findApples( size=float(sys.argv[1]), motionStep=float(sys.argv[2]), scans=loadAllScans(sys.argv[3]) )
 
 # vim: expandtab sw=4 ts=4
 

@@ -8,15 +8,14 @@ import random
 import cv2
 import numpy as np
 
-from log2pts import MOTION_STEP_X
-
 class Apple:
-    def __init__( self, patch=None ):
+    def __init__( self, patch=None, motionStep=None ):
         self.center, self.radius = None, None
         if patch is not None:
             self.data = patch.copy()
         else:
             self.data = None
+        self.motionStep = motionStep
         self.random = random.Random(0).choice
 
 
@@ -60,8 +59,9 @@ class Apple:
             for i, a in enumerate(arr):
                 angle = math.radians(i-len(arr)/2)
                 dist = a/1000.0
-                ret.append( (x, dist*math.cos(angle), dist*math.sin(angle)) )
-            x += MOTION_STEP_X 
+                if a != 0:
+                  ret.append( (x, dist*math.cos(angle), dist*math.sin(angle)) )
+            x += self.motionStep
         return ret
 
 
