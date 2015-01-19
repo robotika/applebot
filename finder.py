@@ -170,7 +170,7 @@ def findApples2( size, scans, gen, motionStep ):
 
 #################################
 
-def findApples3( size, scans, motionStep ):
+def findApples3( size, scans, motionStep, debug=False ):
     "looking for contours in dual-thresholded image"
     orig = np.array( scans ).T
     img = scans2img( scans )
@@ -201,9 +201,9 @@ def findApples3( size, scans, motionStep ):
                     angle = math.radians( y + h/2.0 - 271/2. )
                     dist = level*5/1000.0 # gray to meters
                     ret.append( (motionStep*(x+w/2.0), dist*math.cos(angle), dist*math.sin(angle)) )
-
-        cv2.imshow('image', frame) # transposed matrix corresponds to "what we are used to" view
-        cv2.waitKey(1)
+        if debug:
+            cv2.imshow('image', frame) # transposed matrix corresponds to "what we are used to" view
+            cv2.waitKey(1)
     return ret
 
 

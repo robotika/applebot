@@ -19,7 +19,6 @@ def recordStream( filename ):
     while True:
         data = url.read(200000)
         if len(data) > 0:
-            print len(data)
             f.write( data )
             url.close()
             url = urllib.urlopen( URLP ) 

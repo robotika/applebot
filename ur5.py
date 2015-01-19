@@ -79,6 +79,8 @@ def parseData( data, robot=None, verbose=False ):
             assert subLen == 72, subLen
             if verbose:
                 print "Masterboard", [hex(x) for x in struct.unpack(">II", data[5:5+8] )]
+            if robot:
+                robot.inputs, robot.outputs = struct.unpack(">II", data[5:5+8])
         elif packageType == 4:
             # Cartesian Info
             assert subLen == 53, subLen
@@ -101,6 +103,8 @@ class UniversalRobotUR5:
         self.moving = None # unknown
         self.timestamp = None
         self.pose = None
+        self.inputs = None
+        self.outputs = None
         if replayLog is None:
             self.replayLog = False
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -169,11 +173,19 @@ class UniversalRobotUR5:
 
 
     def openGripper( self ):
-        self.sendCmd("set_digital_out(8,False)" + "\n") # tool 0
+        for i in xrange(3):
+            self.sendCmd("set_digital_out(8,False)" + "\n") # tool 0
+            print "OUTPUTS", self.outputs
+            if self.outputs == 0:
+                break
 
 
     def closeGripper( self ):
-        self.sendCmd("set_digital_out(8,True)" + "\n") # tool 0
+        for i in xrange(3):
+            self.sendCmd("set_digital_out(8,True)" + "\n") # tool 0
+            print "OUTPUTS", self.outputs
+            if self.outputs != 0:
+                break
 
 
 def testUR5( args ):

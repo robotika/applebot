@@ -20,6 +20,8 @@ from log2pgm import loadAllScans
 sys.path.append( ".."+os.sep+"eduro") 
 import laser 
 
+APPLE_SIZE = 0.05 # diameter in meters
+
 class H264Camera( Thread ):
     def __init__( self ):
         Thread.__init__(self)
@@ -97,10 +99,10 @@ def demo():
         print "Apple", apple
         # conversion image -> xyz
         ax,ay,az = apple
-        scannerOffsetZ = 0 # TODO
-        x,y,z = SCAN_TOP_XYZ[0]+ay, SCAN_TOP_XYZ[1]+az, SCAN_TOP_XYZ[2]-ax-scannerOffsetZ
-        print x,y,z # TODO robot.goto there ...
-        robot.goto( (0.3693, 0.291, 0.279) ) # pick apple
+        offset = (-0.109, 0.055, -0.052)
+        x,y,z = SCAN_TOP_XYZ[0]+ay+offset[0], SCAN_TOP_XYZ[1]+az+offset[1], SCAN_TOP_XYZ[2]-ax+offset[2]
+        print x,y,z
+        robot.goto( (x,y,z) ) # pick apple
         robot.closeGripper()
         robot.goto( (0.3693, 0.291, 0.1) ) # drop apple
         robot.openGripper()

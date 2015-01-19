@@ -16,10 +16,18 @@ import laser
 import urllib
 
 URL = "http://192.168.1.6/img.jpg"
+URL2 = "http://192.168.1.6/image?channel=mono"
 
 def takePicture( index ):
     filename = datetime.datetime.now().strftime("logs/pic_%y%m%d_%H%M%S") + "_%03d.jpg" % index
     url = urllib.urlopen( URL ) 
+    f = open( filename, "wb" )
+    data = url.read(1000000)
+    print len(data)
+    f.write( data )
+    f.close()
+    filename = datetime.datetime.now().strftime("logs/bw_%y%m%d_%H%M%S") + "_%03d.jpg" % index
+    url = urllib.urlopen( URL2 ) 
     f = open( filename, "wb" )
     data = url.read(1000000)
     print len(data)
