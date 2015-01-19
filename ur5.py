@@ -151,7 +151,7 @@ class UniversalRobotUR5:
         while self.moving:
             self.receiveData()
 
-        self.sendCmd("movel( p[%f,%f,%f, " % SCAN_BOTTOM_XYZ + HAND_ANGLES_STR + "], a=0.1, v=0.1 )\n")
+        self.sendCmd("movel( p[%f,%f,%f, " % SCAN_BOTTOM_XYZ + HAND_ANGLES_STR + "], a=0.1, v=0.025 )\n")
         for i in xrange(2):
             self.receiveData()
         while self.moving:
