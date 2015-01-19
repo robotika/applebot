@@ -168,8 +168,47 @@ def findApples2( size, scans, gen, motionStep ):
     return removeDuplicities( ret )
 
 
+#################################
+
+def findApples3( size, scans, motionStep ):
+    "looking for contours in dual-thresholded image"
+    orig = np.array( scans ).T
+    img = scans2img( scans )
+    frame = cv2.cvtColor( img.T, cv2.COLOR_GRAY2BGR )
+
+    ret = []
+    appleSize = 10
+    gray = cv2.cvtColor( frame, cv2.COLOR_BGR2GRAY )
+    for level in xrange( 40, 100 ): # i.e. from 20cm to 50cm
+        tmp = gray.copy()
+        mask = tmp < (level - appleSize/2)
+        tmp[mask] = 0
+        mask = gray > (level + appleSize/2)
+        tmp[mask] = 0
+        contours, hierarchy = cv2.findContours( tmp, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE )
+        winSizeY = 1+int(math.degrees( size*1000/float(level*5) )) # just approximation with 1deg resolution
+        desiredArea = winSizeY*size/motionStep*math.pi/4.
+
+        for cnt in contours:
+            area = cv2.contourArea(cnt) #, oriented=True)
+            x,y,w,h = cv2.boundingRect(cnt)
+            if area > 10 and desiredArea*0.5 < area < desiredArea*1.5 and y > 45 and y+h < 225:
+                # only in 180deg forward
+                print level, area, area/desiredArea
+                cv2.drawContours(frame, [cnt], -1, (0,255,0), 2)
+                if len(ret) == 0:
+                    cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
+                    ret.append( ((x,y),(x+w,y+h)) )
+
+        cv2.imshow('image', frame) # transposed matrix corresponds to "what we are used to" view
+        cv2.waitKey(1)
+    cv2.waitKey(2000)
+    return removeDuplicities( ret )
+
+
+
 def findApples( size, scans, motionStep ):
-    return findApples2( size, scans, gen=denseAreaG, motionStep=motionStep )
+    return findApples3( size, scans, motionStep=motionStep )
 
 
 if __name__ == "__main__": 
