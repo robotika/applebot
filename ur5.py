@@ -34,23 +34,24 @@ def parseData( data, robot=None, verbose=False ):
     if len(data) < 5:
         return None
     totalLen, robotState = struct.unpack(">IB", data[:5] )
-    assert robotState == 16, robotState
 #    print totalLen
     if len(data) < totalLen:
         return None
     ret = data[totalLen:]
     data = data[5:totalLen] # length includes header
-    while len(data) > 0:
+
+    # newer version can receive also different robotState data, i.e. 20
+    while robotState == 16 and len(data) > 0:
         subLen, packageType = struct.unpack(">IB", data[:5] )
         if len(data) < subLen:
             return None
 #        print packageType, subLen
         if packageType == 0:
             # Robot Mode Data
-            assert subLen == 38, subLen
+            assert subLen in [38, 46], subLen
             timestamp, connected, enabled, powerOn, emergencyStopped, protectiveStopped, programRunning, programPaused, \
                 robotMode, controlMode, targetSpeedFraction, speedScaling \
-                = struct.unpack( ">QBBBBBBBBBdd", data[5:subLen] )
+                = struct.unpack( ">QBBBBBBBBBdd", data[5:38] )  # hopefully it is just data structure _extension_
             if robot:
                 robot.timestamp = timestamp
             if verbose:
@@ -76,15 +77,15 @@ def parseData( data, robot=None, verbose=False ):
                 print "Tool", struct.unpack(">bbddfBffB", data[5:subLen] )
         elif packageType == 3:
             # Masterboard Data
-            assert subLen == 72, subLen
+            assert subLen in [72, 74], subLen
             if verbose:
                 print "Masterboard", [hex(x) for x in struct.unpack(">II", data[5:5+8] )]
             if robot:
                 robot.inputs, robot.outputs = struct.unpack(">II", data[5:5+8])
         elif packageType == 4:
             # Cartesian Info
-            assert subLen == 53, subLen
-            x,y,z, rx,ry,rz = struct.unpack( ">dddddd", data[5:subLen] )
+            assert subLen in [53, 101], subLen
+            x,y,z, rx,ry,rz = struct.unpack( ">dddddd", data[5:53] )  # subLen
             if robot:
                 robot.pose = (x,y,z, rx,ry,rz)
             if verbose:
