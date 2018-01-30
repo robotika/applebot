@@ -55,31 +55,31 @@ def parseData( data, robot=None, verbose=False ):
             if robot:
                 robot.timestamp = timestamp
             if verbose:
-                print timestamp, targetSpeedFraction, speedScaling
+                print(timestamp, targetSpeedFraction, speedScaling)
         elif packageType == 1:
             # Joint Data
             assert subLen == 251, subLen
             sumSpeed = 0
-            for i in xrange(6):
+            for i in range(6):
                 position, target, speed, current, voltage, temperature, obsolete, mode = \
                         struct.unpack(">dddffffB", data[5+i*41:5+(i+1)*41])
 #                print i,speed
                 sumSpeed += abs(speed)
                 # 253 running mode
             if verbose:
-                print "sumSpeed", sumSpeed
+                print("sumSpeed", sumSpeed)
             if robot:
                 robot.moving = (sumSpeed > 0.000111)
         elif packageType == 2:
             # Tool Data
             assert subLen == 37, subLen
             if verbose:
-                print "Tool", struct.unpack(">bbddfBffB", data[5:subLen] )
+                print("Tool", struct.unpack(">bbddfBffB", data[5:subLen] ))
         elif packageType == 3:
             # Masterboard Data
             assert subLen in [72, 74], subLen
             if verbose:
-                print "Masterboard", [hex(x) for x in struct.unpack(">II", data[5:5+8] )]
+                print("Masterboard", [hex(x) for x in struct.unpack(">II", data[5:5+8] )])
             if robot:
                 robot.inputs, robot.outputs = struct.unpack(">II", data[5:5+8])
         elif packageType == 4:
@@ -89,10 +89,10 @@ def parseData( data, robot=None, verbose=False ):
             if robot:
                 robot.pose = (x,y,z, rx,ry,rz)
             if verbose:
-                print "%.3f, %.3f, %.3f,    %.3f, %.3f, %.3f" % (x,y,z, rx,ry,rz)
+                print("%.3f, %.3f, %.3f,    %.3f, %.3f, %.3f" % (x,y,z, rx,ry,rz))
         data = data[subLen:]
     if verbose:
-        print "------------"
+        print("------------")
     return ret
 
 
@@ -111,7 +111,7 @@ class UniversalRobotUR5:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.s.connect((UR5_HOST, UR5_PORT))
             filename = datetime.datetime.now().strftime("logs/ur5_%y%m%d_%H%M%S.bin")    
-            print filename
+            print(filename)
             self.logIn = open( filename, "wb" ) 
             self.logOut = open( filename.replace(".bin", ".cmd"), "wb" ) 
         else:
@@ -146,18 +146,18 @@ class UniversalRobotUR5:
 #        self.s.send("set_digital_out(8,True)" + "\n") # tool 0
         self.s.send("set_digital_out(8,False)" + "\n") # tool 0
         data = self.s.recv(1024)
-        print "Received", repr(data)
+        print("Received", repr(data))
 
 
     def scan( self ):
         self.sendCmd("movel( p[%f,%f,%f, " % SCAN_TOP_XYZ + HAND_ANGLES_STR + "], a=0.1, v=0.1 )\n")
-        for i in xrange(2):
+        for i in range(2):
             self.receiveData()
         while self.moving:
             self.receiveData()
 
         self.sendCmd("movel( p[%f,%f,%f, " % SCAN_BOTTOM_XYZ + HAND_ANGLES_STR + "], a=0.1, v=0.025 )\n")
-        for i in xrange(2):
+        for i in range(2):
             self.receiveData()
         while self.moving:
             self.receiveData()
@@ -167,28 +167,28 @@ class UniversalRobotUR5:
         if rot is None:
             rot = HAND_ANGLES
         self.sendCmd( ("movel( p[%f, %f, %f," % xyz) + "%f, %f, %f" % rot + "], a=0.1, v=%f )\n" % v )
-        for i in xrange(10):
+        for i in range(10):
             self.receiveData()
             if self.moving:
                 break
-        for i in xrange(200):
+        for i in range(200):
             self.receiveData()
             if not self.moving:
                 break
 
 
     def openGripper( self ):
-        for i in xrange(3):
+        for i in range(3):
             self.sendCmd("set_digital_out(8,False)" + "\n") # tool 0
-            print "OUTPUTS", self.outputs
+            print("OUTPUTS", self.outputs)
             if self.outputs == 0:
                 break
 
 
     def closeGripper( self ):
-        for i in xrange(3):
+        for i in range(3):
             self.sendCmd("set_digital_out(8,True)" + "\n") # tool 0
-            print "OUTPUTS", self.outputs
+            print("OUTPUTS", self.outputs)
             if self.outputs != 0:
                 break
 
@@ -196,7 +196,7 @@ class UniversalRobotUR5:
         self.receiveData()
 
     def wait(self, duration):
-        for i in xrange(20):
+        for i in range(20):
             self.update()
 
 
@@ -232,7 +232,7 @@ def testUR5a( args ):
 #    robot.openGripper()
     robot.wait(1.0)
     robot.term()
-    print robot.pose
+    print(robot.pose)
 
 
 def testUR5(args):
@@ -247,7 +247,7 @@ def testUR5(args):
     z0 = 0.068
     z =  0.07450827878478593
     step = -0.37/4.0
-    for i in xrange(10):
+    for i in range(10):
         v = 0.1 * (i + 1)
         robot.goto((x0, y0, z),
                    (-3.1415, 0.0, 0.0), v)
@@ -271,12 +271,12 @@ def testUR5(args):
                    (-3.1415, 0.0, 0.0), v)
 
     robot.term()
-    print robot.pose
+    print(robot.pose)
 
 
 if __name__ == "__main__": 
     if len(sys.argv) < 2:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
     if sys.argv[1] == "parse":
         data = open(sys.argv[2],"rb").read()
