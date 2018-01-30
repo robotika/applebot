@@ -163,10 +163,14 @@ class UniversalRobotUR5:
             self.receiveData()
 
 
-    def goto( self, xyz ):
-        self.sendCmd( ("movel( p[%f, %f, %f," % xyz) + HAND_ANGLES_STR + "], a=0.1, v=0.1 )\n" )
-        for i in xrange(2):
+    def goto( self, xyz, rot=None, v=0.1 ):
+        if rot is None:
+            rot = HAND_ANGLES
+        self.sendCmd( ("movel( p[%f, %f, %f," % xyz) + "%f, %f, %f" % rot + "], a=0.1, v=%f )\n" % v )
+        for i in xrange(10):
             self.receiveData()
+            if self.moving:
+                break
         for i in xrange(200):
             self.receiveData()
             if not self.moving:
@@ -188,8 +192,15 @@ class UniversalRobotUR5:
             if self.outputs != 0:
                 break
 
+    def update(self):
+        self.receiveData()
 
-def testUR5( args ):
+    def wait(self, duration):
+        for i in xrange(20):
+            self.update()
+
+
+def testUR5a( args ):
     replayLog = None
     if len(args) > 2:
         replayLog = args[2]
@@ -213,12 +224,52 @@ def testUR5( args ):
 #    for i in xrange(10):
 #        robot.receiveData()
 
-    robot.openGripper()
-    robot.scan()
-    robot.goto( (0.3693, 0.291, 0.279) ) # pick apple
-    robot.closeGripper()
-    robot.goto( (0.3693, 0.291, 0.1) ) # drop apple
-    robot.openGripper()
+#    robot.openGripper()
+#    robot.scan()
+#    robot.goto( (0.3693, 0.291, 0.279) ) # pick apple
+#    robot.closeGripper()
+#    robot.goto( (0.3693, 0.291, 0.1) ) # drop apple
+#    robot.openGripper()
+    robot.wait(1.0)
+    robot.term()
+    print robot.pose
+
+
+def testUR5(args):
+    replayLog = None
+    if len(args) > 2:
+        replayLog = args[2]
+    robot = UniversalRobotUR5(replayLog)
+
+    # (4, 0)
+    x0 = -0.30883
+    y0 = 0.06703
+    z0 = 0.068
+    z =  0.07450827878478593
+    step = -0.37/4.0
+    for i in xrange(10):
+        v = 0.1 * (i + 1)
+        robot.goto((x0, y0, z),
+                   (-3.1415, 0.0, 0.0), v)
+        robot.goto((x0, y0, z0),
+                   (-3.1415, 0.0, 0.0), v)
+        robot.goto((x0, y0, z),
+                   (-3.1415, 0.0, 0.0), v)
+
+        robot.goto((x0 + step, y0, z),
+                   (-3.1415, 0.0, 0.0), v)
+        robot.goto((x0 + step, y0, z0),
+                   (-3.1415, 0.0, 0.0), v)
+        robot.goto((x0 + step, y0, z),
+                   (-3.1415, 0.0, 0.0), v)
+
+        robot.goto((x0, y0 + step, z),
+                   (-3.1415, 0.0, 0.0), v)
+        robot.goto((x0, y0 + step, z0),
+                   (-3.1415, 0.0, 0.0), v)
+        robot.goto((x0, y0 + step, z),
+                   (-3.1415, 0.0, 0.0), v)
+
     robot.term()
     print robot.pose
 

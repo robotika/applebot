@@ -99,12 +99,15 @@ def demo():
         print "Apple", apple
         # conversion image -> xyz
         ax,ay,az = apple
-        offset = (-0.109, 0.055, -0.052)
+#        offset = (-0.109, 0.055, -0.052)
+        offset = (0, 0, -0.052)
         x,y,z = SCAN_TOP_XYZ[0]+ay+offset[0], SCAN_TOP_XYZ[1]+az+offset[1], SCAN_TOP_XYZ[2]-ax+offset[2]
         print x,y,z
-        robot.goto( (x,y,z) ) # pick apple
+#        robot.goto( (x,y,z) ) # pick apple
+        robot.goto( (0.6130616715161608, -0.12607307379687063, 0.21591360326114278) )
         robot.closeGripper()
-        robot.goto( (0.3693, 0.291, 0.1) ) # drop apple
+        robot.goto( (0.6130616715161608, -0.12607307379687063, 0.26591360326114278) )
+        robot.goto( (0.3693, 0.101, 0.1) ) # drop apple
         robot.openGripper()
     robot.term()
     scanner.requestStop()
