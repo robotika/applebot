@@ -166,7 +166,7 @@ class UniversalRobotUR5:
     def goto( self, xyz, rot=None, v=0.1 ):
         if rot is None:
             rot = HAND_ANGLES
-        self.sendCmd( ("movel( p[%f, %f, %f," % xyz) + "%f, %f, %f" % rot + "], a=0.1, v=%f )\n" % v )
+        self.sendCmd( (b"movel( p[%f, %f, %f," % xyz) + b"%f, %f, %f" % rot + b"], a=0.1, v=%f )\n" % v )
         for i in range(10):
             self.receiveData()
             if self.moving:
